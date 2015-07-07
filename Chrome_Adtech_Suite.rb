@@ -7,7 +7,12 @@ require "rails"
 
 Watir.default_timeout = 60
 
+standard_event_array = "START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "ELIGIBLE_AD_START", "AD_FIRST_QUARTILE", "ELIGIBLE_AD_PLAYBACK", "AD_SECOND_QUARTILE",  "AD_THIRD_QUARTILE", "AD_COMPLETE", "UNIT_CLOSED"
 
+eligible_adstart_array = ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "ELIGIBLE_AD_START", "AD_VIDEO_START"] || ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "
+	AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "ELIGIBLE_AD_START"]
+
+eligible_playback_array = ["ELIGIBLE_AD_PLAYBACK", "AD_FIRST_QUARTILE"] || ["AD_FIRST_QUARTILE", "ELIGIBLE_AD_PLAYBACK"] || ["AD_SECOND_QUARTILE", "ELIGIBLE_AD_PLAYBACK"] || ["AD_THIRD_QUARTILE", "ELIGIBLE_AD_PLAYBACK"]
 
 describe "A Regression Test Suite for Chrome" do
 	let(:x) { @browser ||= Watir::Browser.new :chrome }
@@ -48,31 +53,31 @@ describe "A Regression Test Suite for Chrome" do
 				locked.wait_while_present
 				event_data = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
 					if duration > 14
-						expect(event_data).to include("START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "ELIGIBLE_AD_START", "AD_FIRST_QUARTILE", "ELIGIBLE_AD_PLAYBACK", "AD_SECOND_QUARTILE",  "AD_THIRD_QUARTILE", "AD_COMPLETE", "UNIT_CLOSED") 
-						expect(event_data).to satisfy {["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "ELIGIBLE_AD_START", "AD_VIDEO_START"] || ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "ELIGIBLE_AD_START"]}
-						expect(event_data).to satisfy { ["ELIGIBLE_AD_PLAYBACK", "AD_FIRST_QUARTILE"] || ["AD_FIRST_QUARTILE", "ELIGIBLE_AD_PLAYBACK"] || ["AD_SECOND_QUARTILE", "ELIGIBLE_AD_PLAYBACK"] || ["AD_THIRD_QUARTILE", "ELIGIBLE_AD_PLAYBACK"]}
+						expect(event_data).to include(standard_event_array) 
+						expect(event_data).to satisfy {eligible_adstart_array}
+						expect(event_data).to satisfy {eligible_playback_array}
 					else
 						expect(event_data).to eq ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "AD_FIRST_QUARTILE", "AD_SECOND_QUARTILE",  "AD_THIRD_QUARTILE", "AD_COMPLETE", "UNIT_CLOSED"]
 					end
 	end
-# 		it "2. Should run an autoplay ad inside a Modal unit and skip the ad after 3 seconds" do
-# 			Watir::Wait.until {x.div(:class => "container").present?}
-# 				intercept = x.input(:id => "modal").click
-# 				skip = x.input(:id => "delay_skip").click
-# 				skip_time = x.text_field(:id => "secs").set "3"
-# 				autoplay = x.input(:id => "autoplay").click
-# 				submit = x.input(:id => "submit").click
-# 				url = x.link(:text => "Click here for test page").click
-# 				sleep 5
-# 					locked = x.div(:class => "adgWrapper")
-# 			Watir::Wait.until {x.div(:class => "adgContinue").text === "Continue »"}
-# 					duration = x.execute_script("return CUPlayerInstance.duration()")
-# 					x.div(:class => "adgContinue").click
-# 					event_data = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
-# 					expect(event_data).to eq ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "SKIP", "UNIT_CLOSED"]
-# 					expect(duration).to be > 0
+		it "2. Should run an autoplay ad inside a Modal unit and skip the ad after 3 seconds" do
+			Watir::Wait.until {x.div(:class => "container").present?}
+				intercept = x.input(:id => "modal").click
+				skip = x.input(:id => "delay_skip").click
+				skip_time = x.text_field(:id => "secs").set "3"
+				autoplay = x.input(:id => "autoplay").click
+				submit = x.input(:id => "submit").click
+				url = x.link(:text => "Click here for test page").click
+				sleep 5
+					locked = x.div(:class => "adgWrapper")
+			Watir::Wait.until {x.div(:class => "adgContinue").text === "Continue »"}
+					duration = x.execute_script("return CUPlayerInstance.duration()")
+					x.div(:class => "adgContinue").click
+					event_data = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
+					expect(event_data).to eq ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "SKIP", "UNIT_CLOSED"]
+					expect(duration).to be > 0
 		
-# 		end
+		end
 
 # 		# it "3. Should run a CTP ad inside a Modal unit and run to completion" do
 # 		# Watir::Wait.until {x.div(:class => "container").present?}
@@ -152,42 +157,48 @@ describe "A Regression Test Suite for Chrome" do
 # 		# # #End Modal Tests
 # 		# # #Start Locking Tests
 
-# 		it "6. Should run an autoplay ad inside a Locking unit and run to completion" do
-# 			Watir::Wait.until {x.div(:class => "container").present?}
-# 				intercept = x.input(:id => "locking").click
-# 				skip = x.input(:id => "delay_skip").click
-# 				skip_time = x.text_field(:id => "secs").set "15"
-# 				autoplay = x.input(:id => "autoplay").click
-# 				submit = x.input(:id => "submit").click
-# 				url = x.link(:text => "Click here for test page").click
+		it "6. Should run an autoplay ad inside a Locking unit and run to completion" do
+			Watir::Wait.until {x.div(:class => "container").present?}
+				intercept = x.input(:id => "locking").click
+				skip = x.input(:id => "delay_skip").click
+				skip_time = x.text_field(:id => "secs").set "15"
+				autoplay = x.input(:id => "autoplay").click
+				submit = x.input(:id => "submit").click
+				url = x.link(:text => "Click here for test page").click
 
-# 			sleep 3
-# 			Watir::Wait.until {x.div(:class => "adgOverlay").exists?}
-# 				x.scroll.to [0, 1200]
-# 			Watir::Wait.until {x.div(:id => "adgPlayerWrapper").present?}
-# 			duration = x.execute_script("return CUPlayerInstance.duration()")
-# 			event = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
-# 				Timeout::timeout(15){
-# 					until duration > 0 do
-# 						duration = x.execute_script("return CUPlayerInstance.duration()")
-# 					end
-# 				}
-# 				time = x.execute_script("return CUPlayerInstance.time()")
-# 				if duration > 14 
-# 					Timeout::timeout(15){
-# 						until time > 14 do
-# 							time = x.execute_script("return CUPlayerInstance.time()")
-# 							event = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
-# 						end
-# 						expect(event).to include("ELIGIBLE_AD_START", "ELIGIBLE_AD_PLAYBACK")
-# 					}
-# 				else
-# 					expect(event).not_to include("ELIGIBLE_AD_START")
-# 				end
-# 				x.div(:class => "adgOverlay").wait_while_present
-# 				event_data = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
-# 				expect(event_data).to satisfy {["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED", "AD_START", "UNIT_DISPLAYED", "AD_VIDEO_START", "ELIGIBLE_AD_START", "AD_FIRST_QUARTILE", "ELIGIBLE_AD_PLAYBACK", "AD_SECOND_QUARTILE", "AD_THIRD_QUARTILE", "AD_COMPLETE", "UNIT_CLOSED"] || ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED", "UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "ELIGIBLE_AD_START", "AD_FIRST_QUARTILE", "ELIGIBLE_AD_PLAYBACK", "AD_SECOND_QUARTILE", "AD_THIRD_QUARTILE", "AD_COMPLETE", "UNIT_CLOSED"]}
-# 		end		
+			sleep 3
+			Watir::Wait.until {x.div(:class => "adgOverlay").exists?}
+				x.scroll.to [0, 1200]
+			Watir::Wait.until {x.div(:id => "adgPlayerWrapper").present?}
+			duration = x.execute_script("return CUPlayerInstance.duration()")
+			event = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
+				Timeout::timeout(15){
+					until duration > 0 do
+						duration = x.execute_script("return CUPlayerInstance.duration()")
+					end
+				}
+				time = x.execute_script("return CUPlayerInstance.time()")
+				if duration > 14 
+					Timeout::timeout(15){
+						until time > 14 do
+							time = x.execute_script("return CUPlayerInstance.time()")
+							event = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
+						end
+						expect(event).to include("ELIGIBLE_AD_START", "ELIGIBLE_AD_PLAYBACK")
+					}
+				else
+					expect(event).not_to include("ELIGIBLE_AD_START")
+				end
+				x.div(:class => "adgOverlay").wait_while_present
+				event_data = x.execute_script("return GMData.ADGEventHandler.getEventStack()")
+				if duration > 14
+						expect(event_data).to include(standard_event_array) 
+						expect(event_data).to satisfy {eligible_adstart_array}
+						expect(event_data).to satisfy {eligible_playback_array}
+				else
+					expect(event_data).to eq ["START", "TAG_LOADED", "UI_LOADED", "AD_REQUEST", "AD_RESPONSE_RECEIVED", "AD_LOADED","UNIT_DISPLAYED", "AD_START", "AD_VIDEO_START", "AD_FIRST_QUARTILE", "AD_SECOND_QUARTILE",  "AD_THIRD_QUARTILE", "AD_COMPLETE", "UNIT_CLOSED"]
+				end
+		end		
 
 # 		it "7. Should run an autoplay ad inside a Locking unit and skip the ad after 3 seconds" do
 # 			Watir::Wait.until {x.div(:class => "container").exists?}
