@@ -1,0 +1,28 @@
+## Select all instances of a specific event from the Pageview table 
+select UV from PAGEVIEW1
+
+## Select the last 50 instances of a specific event from the Pageview table 
+select UV from PAGEVIEW1 limit 50;
+
+## Select the last 50 instances of a specific event from the Pageview table where the Referral Source is google.com
+select UV from PAGEVIEW1 where RS LIKE '%google%' limit 50;
+
+## Select the last 50 instances of a specific event from the Pageview table where the URL includes radaronline
+select UV from PAGEVIEW1 where URL LIKE '%radaronline' limit 50;
+
+## Select an instance of a specific event from the Pageview table which matches a specific PVID
+select UV from PAGEVIEW1 where PVID = '__PAGEVIEW_ID_MACRO__'
+
+## Select an instance of a specific event from the Pageview table which matches 1 or more specific PVIDs
+select UV from PAGEVIEW1 where PVID = '__PAGEVIEW_ID_MACRO__' OR '__PAGEVIEW_ID_MACRO__'
+
+## Select an instance of a specific event from the Pageview table which matches 2 or more criteria
+select UV from PAGEVIEW1 where PUBLISHERID = 'american_media' AND RS LIKE '%google%'
+
+## Show all information associated with a specific PVID
+select * from PAGEVIEW where PVID = '__PAGEVIEW_ID_MACRO__'
+
+## Select an instance of an event from the Pageview table where either of 2 events are met AND another is met
+select UV from PAGEVIEW where PVID = '__PAGEVIEW_ID_MACRO__' AND (SK = 5 OR SK = 10)
+
+## CASE WHEN - Show information 
